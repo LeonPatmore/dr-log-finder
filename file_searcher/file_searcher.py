@@ -30,6 +30,7 @@ class FileSearcher(object):
 
     @staticmethod
     def _reverse_read_line(filepath: str, buf_size: int=8192, until_offset: int=0) -> tuple:
+        logger.info("Searching [ {} ] until offset [ {} ]".format(filepath, until_offset))
         final_lines = list()
 
         with open(filepath) as fh:
@@ -57,6 +58,7 @@ class FileSearcher(object):
                         final_lines.append(lines[i])
 
                 current_offset = new_offset
+                logger.info("Current offset is now [ {} ] out of [ {} ]".format(current_offset, file_size))
 
             if left_over is not None:
                 final_lines.append(left_over)
