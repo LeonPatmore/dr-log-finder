@@ -16,12 +16,11 @@ class FileSearcher(object):
         return glob.glob(path_regex, recursive=True)
 
     def file_to_jsons(self, file_path: str) -> list:
-        file_name = self._file_name_from_path(file_path)
-        offset, jsons = self._get_cached_jsons(file_name)
+        offset, jsons = self._get_cached_jsons(file_path)
         new_offset, reversed_lines = self._reverse_read_line(file_path, until_offset=offset)
         lines = self.reverse_list(reversed_lines)
         jsons.extend(self._read_as_jsons(lines))
-        self.json_cache.update({file_name: _JsonCache(new_offset, jsons)})
+        self.json_cache.update({file_path: _JsonCache(new_offset, jsons)})
         return jsons
 
     @staticmethod
@@ -80,10 +79,6 @@ class FileSearcher(object):
             cache = self.json_cache.get(file_name)
             return cache.offset, cache.jsons
         return 0, list()
-
-    @staticmethod
-    def _file_name_from_path(file_path: str) -> str:
-        return os.path.basename(file_path)
 
 
 class _JsonCache(object):
