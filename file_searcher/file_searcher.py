@@ -15,6 +15,8 @@ class _JsonCache(object):
 class FileSearcher(object):
 
     def __init__(self, cache_offset: bool=False, cache_jsons: bool=False):
+        if self.cache_offset is False and cache_jsons is True:
+            logger.warning("Caching JSONs without caching offsets will lead to massive cache duplications!")
         self.cache_offset = cache_offset
         self.cache_jsons = cache_jsons
         self.json_cache = dict()
