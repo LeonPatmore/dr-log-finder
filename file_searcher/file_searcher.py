@@ -1,34 +1,55 @@
 import json
 import os
-from json import JSONDecodeError
 import glob
+from json import JSONDecodeError
 
 from logger.logger import logger
 
 
+class _JsonCache(object):
+
+    def __init__(self, jsons: list):
+        self.jsons = jsons
+
+
 class FileSearcher(object):
 
-    def __init__(self):
+    def __init__(self, cache_offset: bool=False, cache_jsons: bool=False):
+        self.cache_offset = cache_offset
+        self.cache_jsons = cache_jsons
         self.json_cache = dict()
+        self.offset_cache = dict()
 
     @staticmethod
     def get_files_by_regex(path_regex: str) -> list:
         return glob.glob(path_regex, recursive=True)
 
     def file_to_jsons(self, file_path: str) -> list:
-        offset, jsons = self._get_cached_jsons(file_path)
-        new_offset, reversed_lines = self._reverse_read_line(file_path, until_offset=offset)
-        lines = self.reverse_list(reversed_lines)
+        jsons = list()
+        if self.cache_jsons:
+            jsons = self._get_cached_jsons(file_path)
+        lines = self._get_new_file_lines(file_path)
         jsons.extend(self._read_as_jsons(lines))
-        self.json_cache.update({file_path: _JsonCache(new_offset, jsons)})
+        if self.cache_jsons:
+            self.json_cache.update({file_path: _JsonCache(jsons)})
         return jsons
+
+    def _get_new_file_lines(self, file_path: str) -> list:
+        offset = 0
+        if self.cache_offset:
+            offset = self._get_cached_offset(file_path)
+        new_offset, reversed_lines = self._reverse_read_lines(file_path, until_offset=offset)
+        lines = self.reverse_list(reversed_lines)
+        if self.cache_offset:
+            self.offset_cache.update({file_path: new_offset})
+        return lines
 
     @staticmethod
     def reverse_list(a: list) -> list:
         return list(reversed(a))
 
     @staticmethod
-    def _reverse_read_line(filepath: str, buf_size: int=8192, until_offset: int=0) -> tuple:
+    def _reverse_read_lines(filepath: str, buf_size: int=8192, until_offset: int=0) -> tuple:
         logger.info("Searching [ {} ] until offset [ {} ]".format(filepath, until_offset))
         final_lines = list()
 
@@ -74,15 +95,12 @@ class FileSearcher(object):
                 print("Could not decode line [ {} ] as a JSON!".format(line))
         return jsons
 
-    def _get_cached_jsons(self, file_name: str) -> tuple:
+    def _get_cached_offset(self, file_name: str) -> int:
+        if file_name in self.offset_cache:
+            return self.offset_cache.get(file_name)
+        return 0
+
+    def _get_cached_jsons(self, file_name: str) -> list:
         if file_name in self.json_cache:
-            cache = self.json_cache.get(file_name)
-            return cache.offset, cache.jsons
-        return 0, list()
-
-
-class _JsonCache(object):
-
-    def __init__(self, offset: int, jsons: list):
-        self.offset = offset
-        self.jsons = jsons
+            return self.json_cache.get(file_name).jsons
+        return list()

@@ -3,3 +3,9 @@ server:
   port: 4321
 dr:
   path: "/var/log/nexmo/*/event/dr*.log"
+mongo:
+  host: localhost
+  port: 27017
+  database: dr_log_finder
+  collection:
+    drs: drs

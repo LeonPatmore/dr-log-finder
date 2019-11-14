@@ -2,6 +2,8 @@ import os
 
 import yaml
 
+from logger.logger import logger
+
 
 class Configuration(object):
 
@@ -31,7 +33,7 @@ class Configuration(object):
 
         def _get_property_from_dict(current_path_list: list, current_dict: dict):
             if current_path_list[0] not in current_dict:
-                print("Could not find property {} in configuration")
+                logger.warning("Could not find property [ {} ] in configuration".format(property_path))
                 return None
             else:
                 if len(current_path_list) == 1:
