@@ -32,7 +32,7 @@ class Server(HTTPServer):
         self.serve_forever()
 
     def safe_insert(self, json):
-        if 'messageId' in json and len(self.get_json_with_id(json['messageId'])) == 0:
+        if 'messageId' in json:
             self.dr_collection.insert(json)
 
     def get_json_with_id(self, uuid: str) -> list:

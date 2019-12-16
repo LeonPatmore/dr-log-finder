@@ -2,7 +2,7 @@ server:
   host: 0.0.0.0
   port: 4321
 dr:
-  path: "/var/log/nexmo/*/event/dr*.log"
+  path: "/var/log/nexmo/*/event/*.log"
 mongo:
   host: localhost
   port: 27017
